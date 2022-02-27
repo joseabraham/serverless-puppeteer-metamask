@@ -68,30 +68,6 @@ const fetchDataFromDapp = async (): Promise<number> => {
   }
 };
 
-const writeToSheet = async (POOL_APR: number): Promise<any> => {
-  let sheet = new Sheet();
-  // let reportFor = ["jose@eprezto.com"]
-  // let NameOfSheet = `BALANCER-REPORT`
-  // let folder = "1qFX1rf4EIJgHs_60v-M8etMorITSbpzU";
-  // let newGoogleSheet = await sheet.createGoogleSheet(reportFor, NameOfSheet);
-  // let spreadSheetId = newGoogleSheet.googleSheetId;
-  let spreadSheetId = "1cbaZC0pAeW3CJ-AHvKzDaUVo_V2AlYNIFG8ne3oATl0";
-  // await sheet.writeToSheet(
-  //   ["DATE", "HOUR","PROTOCOL", "POOL_ID", "APR",],
-  //   spreadSheetId
-  // )
-  // await sheet.moveToFolder(spreadSheetId, folder);
-  let arrayToWrite = [
-    dateFormatted(),
-    getHour(),
-    "BALANCER",
-    "0x06df3b2bbb68adc8b0e302443692037ed9f91b42000000000000000000000012",
-    POOL_APR,
-  ];
-  await sheet.writeToSheet(arrayToWrite, spreadSheetId);
-
-  return "WROTE VALUE IN GOOGLE SHEET";
-};
 
 const handler = async (event: any, context: any) => {
     // var params = JSON.parse(event.body);
@@ -108,11 +84,7 @@ const handler = async (event: any, context: any) => {
     }
     /*---------------*/
 
-    /*---WRITE TO GOOGLE SHEET----*/
-    let googleSheet = await writeToSheet(POOL_APR);
-    console.log("googleSheet", googleSheet);
-    /*---------------*/
-
+  
     return {
       statusCode: 200,
       headers: {
