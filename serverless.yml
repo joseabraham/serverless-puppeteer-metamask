@@ -1,0 +1,62 @@
+service: serverless-lambda-puppeteer
+frameworkVersion: "1.64.0"
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  versionFunctions: false
+  runtime: nodejs12.x
+  region: us-east-1
+  stage: dev
+  profile: ${env:PROFILE}
+  memorySize: 2048  
+  environment:
+    UPLOAD_BUCKET: XXXXX
+    S3_ACCESS_KEY: ${env:S3_ACCESS_KEY}
+    S3_SECRET_KEY: ${env:S3_SECRET_KEY}    
+  apiGateway:
+    binaryMediaTypes:
+      - "application/pdf"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "s3:GetObject"
+        - "s3:PutObject"
+      Resource:
+        - arn:aws:s3:::${self:provider.environment.UPLOAD_BUCKET}/*   
+  
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-dotenv-plugin
+  - serverless-apigw-binary
+  - serverless-apigwy-binary
+
+custom:     
+  webpack:
+    webpackConfig: webpack.config.js
+    includeModules: true
+    packager: "yarn"
+  apigwBinary:
+    types:
+      - "application/pdf"
+
+  serverless-offline:
+    location: .webpack/service
+
+functions:
+  run-puppeteer:
+    handler: functions/puppet-master.generate
+    timeout: 600
+    events:
+      - http:
+          path: scrape-balancer
+          method: post
+          timeout: 600 
+          async: true         
+          cors: true
+          parameters:
+            headers:
+              Accept: "application/json"
