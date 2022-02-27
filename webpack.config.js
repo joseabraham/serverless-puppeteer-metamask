@@ -2,7 +2,6 @@ const webpack = require("webpack");
 const path = require("path");
 const slsw = require("serverless-webpack");
 const nodeExternals = require("webpack-node-externals");
-const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: slsw.lib.entries,
@@ -37,11 +36,6 @@ module.exports = {
   plugins: [
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development"
-    }),
-    new CopyPlugin({
-      patterns: [
-        { from: "lib/googleDrive/eprezto-28a850e5db92.json", to: "eprezto-28a850e5db92.json" }        
-      ],
-    }),
+    })  
   ]
 };

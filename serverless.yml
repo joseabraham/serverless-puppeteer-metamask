@@ -60,3 +60,15 @@ functions:
           parameters:
             headers:
               Accept: "application/json"
+  download-metamask:
+    handler: functions/metamask-download.generate
+    timeout: 30
+    events:
+      - http:
+          path: metamask-download
+          method: post
+          timeout: 30                    
+          cors: true
+          parameters:
+            headers:
+              Accept: "application/json"

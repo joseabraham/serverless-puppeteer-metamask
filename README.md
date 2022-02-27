@@ -35,5 +35,19 @@ Commit to the master branch and SEED will handle the CI/CD Deploy
 * Browserless Docker Version
 * Some functions have been foked from the [Chain Link Dappteer Repo](https://github.com/ChainSafe/dappeteer)
 
+### **BROWSERLESS LOCAL SETUP**
+
+```
+docker run \
+  -e "TOKEN=2cbc5771-38f2-4dcf-8774-50ad5123-Puppeteer-metamask" \
+  -e "CONNECTION_TIMEOUT=520000" \
+  -e "MAX_CONCURRENT_SESSIONS=50" \
+  -e "METRICS_JSON_PATH=/home/browserless/metrics.json" \      
+  -e "WORKSPACE_DIR=/home/browserless" \
+  -v ./home/browserless:/home/browserless  -p 3000:3000  --restart always  \
+  -d \
+  --name browserless browserless/chrome
+```
+
 ___
 For more information about the complete setup check the following [Medium Post](https://medium.com)

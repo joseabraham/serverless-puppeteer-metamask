@@ -1,6 +1,5 @@
 import puppeteer from 'puppeteer-core';
 import { Page } from 'puppeteer-core';
-const chromeLambda = require("chrome-aws-lambda");
 import { getMetamask } from './metamask';
 import downloader, { Path } from './metamaskDownloader';
 import { isNewerVersion } from './utils';
@@ -119,6 +118,48 @@ export async function launch(puppeteerLib: typeof puppeteer, options: LaunchOpti
         // browserWSEndpoint: `wss://puppet.blue-swan.io/?token=2cbc5771-38f2-4dcf-8774-50ad51BS-Puppet-Master&stealth&--disable-extensions-except=${METAMASK_PATH}&--load-extension=${METAMASK_PATH}&`        
         browserWSEndpoint: `wss://puppet.blue-swan.io/?token=2cbc5771-38f2-4dcf-8774-50ad51BS-Puppet-Master&--disable-extensions-except=${METAMASK_PATH}&--load-extension=${METAMASK_PATH}&headless=false`        
     });  
+
+}
+
+/**
+ *  Download Metamask Plugin Locally
+ * */
+ export async function download(options: LaunchOptions): Promise<string> {
+  if (!options || !options.metamaskVersion)
+    throw new Error(
+      `Pleas provide "metamaskVersion" (use recommended "${RECOMMENDED_METAMASK_VERSION}" or "latest" to always get latest release of MetaMask)`,
+    );
+
+  const { metamaskVersion, metamaskLocation } = options;
+
+  /* eslint-disable no-console */
+  console.log(); // new line
+  if (metamaskVersion === 'latest')
+    console.warn(
+      '\x1b[33m%s\x1b[0m',
+      `It is not recommended to run metamask with "latest" version. Use it at your own risk or set to the recommended version "${RECOMMENDED_METAMASK_VERSION}".`,
+    );
+  else if (isNewerVersion(RECOMMENDED_METAMASK_VERSION, metamaskVersion))
+    console.warn(
+      '\x1b[33m%s\x1b[0m',
+      `Seems you are running newer version of MetaMask that recommended by dappeteer team.
+      Use it at your own risk or set to the recommended version "${RECOMMENDED_METAMASK_VERSION}".`,
+    );
+  else if (isNewerVersion(metamaskVersion, RECOMMENDED_METAMASK_VERSION))
+    console.warn(
+      '\x1b[33m%s\x1b[0m',
+      `Seems you are running older version of MetaMask that recommended by dappeteer team.
+      Use it at your own risk or set the recommended version "${RECOMMENDED_METAMASK_VERSION}".`,
+    );
+  else console.log(`Running tests on MetaMask version ${metamaskVersion}`);
+
+  console.log(); // new line
+  /* eslint-enable no-console */
+
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const METAMASK_PATH = await downloader(metamaskVersion, metamaskLocation);
+  
+  return METAMASK_PATH
 
 }
 
