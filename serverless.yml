@@ -15,7 +15,8 @@ provider:
   environment:
     UPLOAD_BUCKET: XXXXX
     S3_ACCESS_KEY: ${env:S3_ACCESS_KEY}
-    S3_SECRET_KEY: ${env:S3_SECRET_KEY}    
+    S3_SECRET_KEY: ${env:S3_SECRET_KEY}  
+    BROWSERLESS_PATH: ${env:BROWSERLESS_PATH}  
   apiGateway:
     binaryMediaTypes:
       - "application/pdf"
@@ -52,10 +53,10 @@ functions:
     timeout: 600
     events:
       - http:
-          path: scrape-balancer
+          path: scrape-sushi
           method: post
           timeout: 600 
-          async: true         
+          # async: true         
           cors: true
           parameters:
             headers:

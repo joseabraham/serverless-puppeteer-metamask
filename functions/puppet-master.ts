@@ -1,86 +1,79 @@
 import middy from "@middy/core";
 import doNotWaitForEmptyEventLoop from "@middy/do-not-wait-for-empty-event-loop"; 
 import puppeteer from "puppeteer-core";
-import { dateFormatted, getHour } from "../lib/utils";
-
 import { launch, setupMetamask } from "../lib/index";
 
 
-/*ENABLE FOR LOCAL TESTING*/
-// var browserParams = {
-//   headless: false,
-//   args: ["--no-sandbox", "--disable-setuid-sandbox"],
-//   executablePath:
-//     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", //let's use real chrome instead of Chromium
-// };
+const connectWallet = async (page: puppeteer.Page, metamask) => {  
+  
+  const button = await page.$('#connect-wallet');  
+  await button.click();
+  console.log("1. Clicked Connect Button")
+  
+  const overlay_button = await page.$('.overflow-y-auto > div');    
+  await overlay_button.click();
+  console.log("2. Clicked Overlay Button")
+  await page.waitForTimeout(1000);
+  
+  await metamask.approve();
+  await page.bringToFront();
+  return;
+}
 
-const fetchDataFromDapp = async (): Promise<number> => {
+const fillUptheSwapFields = async(page: puppeteer.Page) =>{
+    console.log("FILLING AMOUNT FIELD")
+    await page.$eval(
+      "input[title='Token Amount']",
+      //@ts-ignore
+      (el, value) => (el.value = value),
+      9999
+    );
+
+}
+
+const connectToSushiSwap = async (): Promise<boolean> => {
   let browser: any = null;
   try {
     browser = await launch(puppeteer, {
-      metamaskVersion: "v10.8.1",
-      // metamaskLocation: '/home/browserless'
+      metamaskVersion: "v10.1.1",      
     });
-
+    
     const metamask = await setupMetamask(browser);
-    const IInstalled = await metamask.switchNetwork("ropsten");
-    console.log("IInstalled", IInstalled);
-    // await metamask.addToken('0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa');
-    // browser = await puppeteer.connect({
-    //     browserWSEndpoint: `wss://puppet.blue-swan.io/?token=2cbc5771-38f2-4dcf-8774-50ad51BS-Puppet-Master&stealth`,
-    // });
-
     const page = await browser.newPage();
-    // var params = JSON.parse(event.body);
-    // console.log("function params", params);
-
     await page.goto(
-      "https://polygon.balancer.fi/#/pool/0x06df3b2bbb68adc8b0e302443692037ed9f91b42000000000000000000000012"
+      "https://app.sushi.com/en/swap"
     );
-    await page.waitForTimeout(5000);
 
-    const POOL_APR = await page.evaluate(() => {
-      let APR = document.querySelector(".divide-y > div > div:nth-child(2)");
-      console.log("APR", APR);
-      return parseFloat(APR?.innerHTML.replace("%", ""));
+    await page.setViewport({
+      width: 1920,
+      height: 1080,
     });
-    // Now, let's get some simple markdown CSS for print
-    // await page.goto(
-    //   "https://raw.githubusercontent.com/simonlc/Markdown-CSS/master/markdown.css"
-    // );
-    // const stylesheet = await page.evaluate(() => document.body.innerText);
+    await page.waitForTimeout(1000);
+    await connectWallet(page, metamask);
+    await fillUptheSwapFields(page);
 
-    // Finally, let's inject the above in a blank page and print it.
-    // await page.goto("about:blank");
-    // await page.setContent(apiContent);
-    // await page.addStyleTag({ content: stylesheet });
-
-    // Return a PDF buffer to trigger the editor to download.
-    // page.pdf();
-    return POOL_APR;
-  } catch (e) {
-    console.log("ERROR IN FETCH DAPP", e);
+    await page.waitForTimeout(60000);
     browser.close();
-  } finally {
-    if (browser) {
-      browser.close();
-    }
-  }
+    
+    return true;
+  } catch (e) {
+    console.log("ERROR IN DAPP", e);
+    browser.close();
+    return false
+  } 
 };
 
 
-const handler = async (event: any, context: any) => {
-    // var params = JSON.parse(event.body);
-    // console.log("function params", params);
+const handler = async (_event: any, _context: any) => {
   try {
     console.log("INITIATING THE PROCESSS");
 
-    /*---RETRIES ENABLED FOR FETCHING DATA TO AVOID NaN situations----*/
-    let POOL_APR = await fetchDataFromDapp();
-    console.log("POOL_APR", POOL_APR);
-    while (isNaN(POOL_APR) || POOL_APR === undefined) {
-      POOL_APR = await fetchDataFromDapp();
-      console.log("POOL_APR RETRY", POOL_APR);
+    /*---RETRIES ENABLED FOR FETCHING ----*/
+    let EXECUTED_SUCCESSFULLY = await connectToSushiSwap();
+    
+    while (!EXECUTED_SUCCESSFULLY) {
+      EXECUTED_SUCCESSFULLY = await connectToSushiSwap();
+      console.log("EXECUTED_SUCCESSFULLY", EXECUTED_SUCCESSFULLY);
     }
     /*---------------*/
 
@@ -92,12 +85,12 @@ const handler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         response: "function running",
-        POOL_APR: POOL_APR,
+        EXECUTED_SUCCESSFULLY: EXECUTED_SUCCESSFULLY,
       }),
     };
   } catch (e) {
     let error: any = e;
-    console.log("errors on report generation", error);
+    console.log("ERROR IN LAMBDA", error);
     return {
       statusCode: 500,
       headers: {
@@ -105,7 +98,7 @@ const handler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         response: "function running",
-        enviarSQSMessage: "ERROR",
+        EXECUTED_SUCCESSFULLY: "ERROR",
       }),
     };
   }

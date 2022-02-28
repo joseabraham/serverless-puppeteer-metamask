@@ -44,13 +44,18 @@ docker run \
   -e "MAX_CONCURRENT_SESSIONS=50" \
   -e "METRICS_JSON_PATH=/home/browserless/metrics.json" \      
   -e "WORKSPACE_DIR=/home/browserless" \
-  -v "/$PWD/home/browserless:/home/browserless"  -p 3000:3000  --restart always  \
+  -v "/$PWD/home/browserless:/home/browserless"  -p 3001:3000  --restart always  \
   -d \
   --name browserless browserless/chrome
 
 OR
 
-  docker run -e "TOKEN=2cbc5771-38f2-4dcf-8774-50ad5123-Puppeteer-metamask" -e "CONNECTION_TIMEOUT=520000" -e "MAX_CONCURRENT_SESSIONS=50" -e "METRICS_JSON_PATH=/home/browserless/metrics.json" -e "WORKSPACE_DIR=/home/browserless" -v "/$PWD/home/browserless:/home/browserless"  -p 3000:3000  --restart always -d --name browserless browserless/chrome
+  docker run -e "TOKEN=2cbc5771-38f2-4dcf-8774-50ad5123-Puppeteer-metamask" -e "CONNECTION_TIMEOUT=520000" -e "MAX_CONCURRENT_SESSIONS=50" -e "METRICS_JSON_PATH=/home/browserless/metrics.json" -e "WORKSPACE_DIR=/home/browserless" -v "/$PWD/home/browserless:/home/browserless"  -p 3001:3000  --restart always -d --name browserless browserless/chrome
+
+  docker ps
+
+  docker exec -it CONTAINER_ID bash
+
 ```
 
 

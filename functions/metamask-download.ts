@@ -6,7 +6,7 @@ const downloadMetamaskLocally = async (): Promise<string> => {
   
   try {
     let metamaskPath = await download({
-      metamaskVersion: "v10.8.1",
+      metamaskVersion: "v10.1.1",
       metamaskLocation: './home/browserless'
     });
   

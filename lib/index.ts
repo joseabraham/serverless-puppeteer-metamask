@@ -1,3 +1,4 @@
+import { Console } from 'console';
 import puppeteer from 'puppeteer-core';
 import { Page } from 'puppeteer-core';
 import { getMetamask } from './metamask';
@@ -49,11 +50,7 @@ export type TransactionOptions = {
 
 export const RECOMMENDED_METAMASK_VERSION = 'v10.8.1';
 
-var browserParams = {
-  headless: false,
-  args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  	executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' //let's use real chrome instead of Chromium
-};
+const BROWSERLESS_PATH = process.env.BROWSERLESS_PATH;
 
 /**
  * Launch Puppeteer chromium instance with MetaMask plugin installed
@@ -91,32 +88,15 @@ export async function launch(puppeteerLib: typeof puppeteer, options: LaunchOpti
   /* eslint-enable no-console */
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  // const METAMASK_PATH = await downloader(metamaskVersion, metamaskLocation);
-  const METAMASK_PATH = '/home/browserless/metamask/v10_8_1';
+  /* METAMASK CONTANIER MOUNTED DIRECTORY WHERE WE DOWNLOADED THE EXTENSION */
+  const METAMASK_PATH = '/home/browserless/v10_1_1';
 
   console.log('METAMASK_PATH', METAMASK_PATH)
-
-  // return puppeteerLib.launch({
-  //   headless: true,
-  //   // slowMo: 250,
-  //   executablePath: await chromeLambda.executablePath,
-  //   // args: [`--disable-extensions-except=${METAMASK_PATH}`, `--load-extension=${METAMASK_PATH}`, "--no-sandbox", "--disable-setuid-sandbox", ...(args || [])],
-  //   // args: [...chromeLambda.args, `--disable-extensions-except=${METAMASK_PATH}`, `--load-extension=${METAMASK_PATH}`, ...(args || [])],
-  //   args: chromeLambda.args.concat([
-  //     "--allow-file-access-from-files",
-  //     "--enable-local-file-accesses",
-  //     `--disable-extensions-except=${METAMASK_PATH}`,   
-  //     `--load-extension=${METAMASK_PATH}`,
-  //     ...(args || [])
-  //   ]),
-  //   // executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  //   ...rest,
-  // });
-
+  console.log("BROWSERLESS_PATH", BROWSERLESS_PATH)
+  console.log("FULL_URL", `ws://${BROWSERLESS_PATH}&--disable-extensions-except=${METAMASK_PATH}&--load-extension=${METAMASK_PATH}&headless=false`)
   
-     return puppeteerLib.connect({
-        // browserWSEndpoint: `wss://puppet.blue-swan.io/?token=2cbc5771-38f2-4dcf-8774-50ad51BS-Puppet-Master&stealth&--disable-extensions-except=${METAMASK_PATH}&--load-extension=${METAMASK_PATH}&`        
-        browserWSEndpoint: `wss://puppet.blue-swan.io/?token=2cbc5771-38f2-4dcf-8774-50ad51BS-Puppet-Master&--disable-extensions-except=${METAMASK_PATH}&--load-extension=${METAMASK_PATH}&headless=false`        
+     return puppeteerLib.connect({                
+        browserWSEndpoint: `ws://${BROWSERLESS_PATH}&--disable-extensions-except=${METAMASK_PATH}&--load-extension=${METAMASK_PATH}&--window-size=1920,1080&headless=false`,        
     });  
 
 }
@@ -193,7 +173,7 @@ export async function setupMetamask(
 
   await closeNotificationPage(browser);
 
-  await showTestNets(page);
+  // await showTestNets(page);
 
   return getMetamask(page);
 }
@@ -304,4 +284,5 @@ async function importAccount(
 
   const popupButton = await metamaskPage.waitForSelector('.popover-header__button', {timeout: 100000});
   await popupButton.click();
+  
 }
